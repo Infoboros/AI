@@ -1,0 +1,10 @@
+.ExtendSolution {
+    margin: 5px auto auto;
+    font-size: 14px;
+}
+
+.ExtendCell {
+    padding: 3px; /* Поля вокруг содержимого таблицы */
+    border: 2px solid black;
+    width: 15px;
+}

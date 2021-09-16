@@ -1,0 +1,12 @@
+.CodeSolution {
+    margin: 5px auto auto;
+    margin-bottom: 20px;
+    font-size: 18px;
+}
+
+.Cell {
+    padding: 3px; /* Поля вокруг содержимого таблицы */
+    border: 2px solid black;
+    width: 20px;
+    height: 20px;
+}
