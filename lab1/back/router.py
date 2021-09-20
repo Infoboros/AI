@@ -1,3 +1,5 @@
+import random
+
 from fastapi.routing import APIRouter
 
 from schema import Request, Response
@@ -11,7 +13,7 @@ router = APIRouter()
 def get_solution(
         request: Request
 ):
-
+    random.seed()
     simulation = SimulatedAnnealing(
         request.initial_temperature,
         request.final_temperature,

@@ -54,12 +54,17 @@ class SimulatedAnnealing:
                 if check_p:
                     bed_for_second += 1
 
-                if (working_energy <= current_energy) or \
-                        (check_p):
+                if working_energy <= current_energy:
                     current = working.copy()
-                    if current.energy < best.energy:
-                        best = current.copy()
-                        self._append_statistic_point(self.best_statistic, best.energy)
+
+                if (working_energy > current_energy) and check_p:
+                    current = working.copy()
+
+                if working.energy < best.energy:
+                    best = working.copy()
+                    self._append_statistic_point(self.best_statistic, best.energy)
+                else:
+                    working = current.copy()
 
                 self.time += 1
 
@@ -67,6 +72,5 @@ class SimulatedAnnealing:
 
             temperature *= self.alfa_for_temperature
             self._append_statistic_point(self.temperature_statistic, temperature)
-
 
         return best

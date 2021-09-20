@@ -31,8 +31,6 @@ def create_init_vector(size: int) -> List[int]:
 
 
 def compute_energy(solution: [int]) -> int:
-    size = len(solution)
-
     conflicts = 0
 
     for index, figure in enumerate(solution):
