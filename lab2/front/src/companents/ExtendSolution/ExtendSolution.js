@@ -7,7 +7,7 @@ export default function ExternSolution({solution}) {
     return (
         <div>{
             solution.map(({prototype, vectors}) => {
-                return <p>{prototype}{"->"}{vectors}</p>
+                return <p>{prototype}{"-> { "}{vectors.join('; ')}{" }"}</p>
             })
         }</div>
     )
