@@ -1,0 +1,13 @@
+.RequestForm {
+    background-color: whitesmoke;
+    border-radius: 25px;
+    max-width: 600px;
+    width: 100%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    min-height: 300px;
+    padding: 50px;
+    transform: translateY(-50%) translateX(-50%);
+    z-index: 666;
+}

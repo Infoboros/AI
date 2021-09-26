@@ -1,16 +1,20 @@
-# This is a sample Python script.
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-# Press ⌃R to execute it or replace it with your code.
-# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
+from router import router
 
+app = FastAPI(
+    title='Лабораторная работа №2',
+    description="Алгоритм теории адаптивного резонанса",
+    version="0.0.1"
+)
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins='*',
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=['*'],
+)
 
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+app.include_router(router, prefix="/solution", tags=["Решение"])
