@@ -22,7 +22,11 @@ export default function Map({settings}) {
         const nodes = []
 
         for (let i = 0; i < countCity; i++)
-            nodes.push({id: i.toString()})
+            nodes.push({
+                id: i.toString(),
+                x: i * 100,
+                y: (i % 2) * 100
+            })
 
         const links = []
         nodes.map(node1 => {
@@ -40,7 +44,13 @@ export default function Map({settings}) {
     }, [settings])
 
     const config = {
-        directed: false
+        height: 650,
+        width: 1300,
+        directed: false,
+        d3: {
+            disableLinkForce: true,
+            gravity: -500
+        },
     };
 
     const onNodePositionChange = (nodeId, x, y) => {
