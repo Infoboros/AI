@@ -3,8 +3,8 @@ import React, {useCallback, useState} from "react";
 import './Settings.css'
 
 import {useForm, Controller} from "react-hook-form";
-import {Button, CircularProgress, Fade, FormLabel, Grid, TextField,} from "@material-ui/core";
-import {PieChart} from "@material-ui/icons";
+import {Button, Fade, FormLabel, Grid, TextField,} from "@material-ui/core";
+import {Check} from "@material-ui/icons";
 
 export default function Settings({isFormOpen, setIsFormOpen, setSettings}) {
 
@@ -12,16 +12,19 @@ export default function Settings({isFormOpen, setIsFormOpen, setSettings}) {
 
     const [isSubmitFormLoading, setIsSubmitFormLoading] = useState(false)
     const onSubmit = useCallback(async (data) => {
-
+        setSettings(data)
     }, [setSettings]);
 
 
     const {handleSubmit, register, control} = useForm();
 
     const fields = [
-        {label: "Максимальное количество кластеров", name: "N", initial: 10},
-        {label: "Параметр внимательности (0<p<=1)", name: "p", initial: 0.5},
-        {label: "Бета-параметр (небольшое целое число)", name: "b", initial: 0.98},
+        {label: "Количество городов", name: "countCity"},
+        {label: "Количество муравьев на каждый город", name: "countAnts"},
+        {label: "α (относительная значимость пути)", name: "alfa"},
+        {label: "β (относительная значимость видимости)", name: "betta"},
+        {label: "r (коэффициент количества фермента, оставляемого муравьем)", name: "r"},
+        {label: "Q (количество фермента, оставляемого муравьем", name: "Q"},
     ]
 
     return (
@@ -49,29 +52,10 @@ export default function Settings({isFormOpen, setIsFormOpen, setSettings}) {
                         )
                     })}
 
-                    <Grid item xs={12}>
-                        <FormLabel>{"Векторы признаков"}</FormLabel>
-                    </Grid>
-                    <Grid item xs={12}>
-                        <Controller
-                            control={control}
-                            ref={register}
-                            as={TextField}
-                            fullWidth
-                            name={"vectors"}
-                            variant="outlined"
-                            render={({field}) => <TextField {...field} multiline/>}
-                        />
-                    </Grid>
-
                     <Grid className={'Actions'} item xs={12}>
                         <Button variant="outlined" onClick={onCloseClick}>Закрыть</Button>
                         <Button variant="contained" color="secondary" type="submit" style={{marginLeft: "5px"}}>
-                            {
-                                isSubmitFormLoading
-                                    ? <><CircularProgress color="inherit" size="1.2rem"/>&nbsp;Кластеризация...</>
-                                    : <>Кластеризировать&nbsp;<PieChart/></>
-                            }
+                                Задать настройки<Check style={{marginLeft: "5px"}}/>
                         </Button>
                     </Grid>
                 </Grid>

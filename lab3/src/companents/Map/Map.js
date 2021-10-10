@@ -1,21 +1,14 @@
 import React, {useEffect, useState} from "react";
-import {Paper} from "@material-ui/core";
+import {Button, Grid, Paper} from "@material-ui/core";
 import {Graph} from 'react-d3-graph'
+import {Check} from "@material-ui/icons";
 
 
-export default function Map({settings}) {
+export default function Map({settings, setSettigs}) {
 
-    const [graph, setGraph] = useState({
-        nodes: [
-            {id: 'Harry', x: 0, y: 0},
-            {id: 'Sally', x: 0, y: 0},
-            {id: 'Alice'}
-        ],
-        links: [
-            {source: 'Harry', target: 'Sally'},
-            {source: 'Harry', target: 'Alice'},
-        ]
-    })
+    const [graph, setGraph] = useState({})
+
+    let ants = []
 
     useEffect(() => {
         const {countCity} = settings
@@ -23,9 +16,9 @@ export default function Map({settings}) {
 
         for (let i = 0; i < countCity; i++)
             nodes.push({
-                id: i.toString(),
-                x: i * 100,
-                y: (i % 2) * 100
+                id: i,
+                x: i * 100 + 100,
+                y: (i % 2) * 100 + 100
             })
 
         const links = []
@@ -33,7 +26,11 @@ export default function Map({settings}) {
             nodes
                 .filter(node => node.id !== node1.id)
                 .map(node2 => {
-                    links.push({source: node1.id, target: node2.id})
+                    links.push({
+                        source: node1.id,
+                        target: node2.id,
+                        pheromone: 1 / nodes.length
+                    })
                 })
         })
 
@@ -54,7 +51,184 @@ export default function Map({settings}) {
     };
 
     const onNodePositionChange = (nodeId, x, y) => {
-        console.log(nodeId, x, y)
+        const {nodes, links} = graph;
+
+        setGraph({
+            nodes: [
+                ...(nodes.filter(node => node.id !== nodeId)),
+                {
+                    id: nodeId,
+                    x, y
+                }
+            ],
+            links
+        })
+    }
+
+    const initAnts = () => {
+        const {countCity, countAnts} = settings
+
+        ants = []
+
+        for (let i = 0; i < countCity; i++) {
+            for (let j = 0; j < countAnts; j++) {
+                ants.push({
+                    path: [i],
+                    pathLength: 0
+                })
+            }
+        }
+    }
+
+    const handleReset = () => {
+        initAnts()
+
+        const {nodes, links} = graph
+        setGraph({
+            nodes: [...nodes],
+            links: links.map(link => {
+                return {
+                    ...link,
+                    pheromone: 1 / nodes.length
+                }
+            })
+        })
+    }
+
+    const selectNextCity = (ant, prevCity) => {
+        let nextCity;
+        let denom = 0;
+
+        const {countCity, alfa, betta} = settings
+        const {links} = graph
+
+        for (nextCity = 0; nextCity < countCity; nextCity++) {
+            if (!ant.path.includes(nextCity)) {
+                const link = links.find(link => (link.source === prevCity) && (link.target === nextCity))
+                denom += Math.pow(link.pheromone, alfa) *
+                    Math.pow((1 / getDistance(prevCity, nextCity)), betta);
+            }
+        }
+
+
+        do {
+            let p;
+            nextCity++;
+            if (nextCity >= countCity) {
+                nextCity = 0;
+            }
+            if (!ant.path.includes(nextCity)) {
+                const link = links.find(link => (link.source === prevCity) && (link.target === nextCity))
+                p = Math.pow(link.pheromone, alfa) *
+                    Math.pow((1.0 / getDistance(prevCity, nextCity)), betta) / denom;
+
+
+                const random = Math.random()
+                if (random < p) {
+                    break;
+                }
+            }
+        } while (true);
+        return nextCity;
+    }
+
+    const getDistance = (prevCity, nextCity) => {
+        const {nodes} = graph
+
+        const prevNode = nodes.find(node => node.id === prevCity)
+        const nextNode = nodes.find(node => node.id === nextCity)
+
+
+        const xd = Math.abs(prevNode.x - nextNode.x);
+        const yd = Math.abs(prevNode.y - nextNode.y);
+        return Math.sqrt(((xd * xd) + (yd * yd)));
+    }
+
+    const simulateAnts = () => {
+        let moving = 0
+
+        const {countCity} = settings
+
+        for (let antI = 0; antI < ants.length; antI++) {
+            const prevCity = ants[antI].path[ants[antI].path.length - 1]
+
+            if (ants[antI].path.length >= countCity) {
+                if (ants[antI].path.length === countCity) {
+                    ants[antI].pathLength += getDistance(prevCity, ants[antI].path[0])
+                    ants[antI].path.push(ants[antI].path[0])
+                    moving++;
+                }
+                continue
+            }
+
+            const nextCity = selectNextCity(ants[antI], prevCity)
+
+            ants[antI].path.push(nextCity)
+            ants[antI].pathLength += getDistance(prevCity, nextCity)
+            moving++;
+        }
+
+        return moving
+    }
+
+    const updatePheromone = () => {
+
+        const {r, countCity, Q} = settings
+
+        let newLinks = graph.links
+            .map(link => {
+                let newPheromone = link.pheromone * (1 - r)
+                if (newPheromone < 0)
+                    newPheromone = 0
+
+                return {
+                    ...link,
+                    pheromone: newPheromone
+                }
+            })
+
+        for (let ant = 0; ant < ants.length; ant++) {
+            for (let i = 0; i < countCity; i++) {
+
+                const prevCity = ants[ant].path[i]
+                const nextCity = ants[ant].path[i + 1]
+
+                let D = (Q / ants[ant].pathLength);
+
+                newLinks = newLinks.map(link => {
+                    const {source, target} = link
+
+                    let newLink = {
+                        ...link
+                    }
+
+                    if (
+                        ((source === prevCity) && (target === nextCity))
+                    )
+                        newLink.pheromone = D + link.pheromone * r
+
+                    return newLink
+                })
+
+            }
+        }
+
+        setGraph({
+            nodes: graph.nodes,
+            links: newLinks
+        })
+    }
+
+    const handleIteration = () => {
+        for (let i = 0; i < 10; i++) {
+            initAnts()
+            while (simulateAnts()) {
+            }
+            updatePheromone()
+        }
+
+        console.log(ants)
+        console.log(graph)
     }
 
     return (
@@ -65,6 +239,15 @@ export default function Map({settings}) {
                 config={config}
                 onNodePositionChange={onNodePositionChange}
             />
+            <Grid item xs={12}>
+                <Button variant="outlined" onClick={handleReset} style={{marginBottom: "20px"}}>
+                    Перезапуск
+                </Button>
+                <Button variant="contained" onClick={handleIteration} color="secondary"
+                        style={{marginLeft: "5px", marginBottom: "20px"}}>
+                    Старт Итерации
+                </Button>
+            </Grid>
         </Paper>
     )
 
