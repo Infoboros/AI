@@ -7,6 +7,8 @@ import {Check} from "@material-ui/icons";
 export default function Map({settings, setSettigs}) {
 
     const [graph, setGraph] = useState({})
+    const [bestPath, setBestPath] = useState([])
+    const [bestLenght, setBestLenght] = useState(0)
 
     let ants = []
 
@@ -18,7 +20,8 @@ export default function Map({settings, setSettigs}) {
             nodes.push({
                 id: i,
                 x: i * 100 + 100,
-                y: (i % 2) * 100 + 100
+                y: (i % 2) * 100 + 100,
+                color: "#000000"
             })
 
         const links = []
@@ -29,7 +32,8 @@ export default function Map({settings, setSettigs}) {
                     links.push({
                         source: node1.id,
                         target: node2.id,
-                        pheromone: 1 / nodes.length
+                        pheromone: 1 / nodes.length,
+                        color: "#000000"
                     })
                 })
         })
@@ -85,10 +89,16 @@ export default function Map({settings, setSettigs}) {
 
         const {nodes, links} = graph
         setGraph({
-            nodes: [...nodes],
+            nodes: nodes.map(node => {
+                return {
+                    ...node,
+                    color: "#000000"
+                }
+            }),
             links: links.map(link => {
                 return {
                     ...link,
+                    color: "#000000",
                     pheromone: 1 / nodes.length
                 }
             })
@@ -206,29 +216,66 @@ export default function Map({settings, setSettigs}) {
                         ((source === prevCity) && (target === nextCity))
                     )
                         newLink.pheromone = D + link.pheromone * r
-
                     return newLink
                 })
 
             }
         }
 
+        let newNodes = graph.nodes
+            .map(node => {
+                return {
+                    ...node,
+                    color: "#000000"
+                }
+            })
+
+        newLinks = newLinks
+            .sort((l1, l2) => l2.pheromone - l1.pheromone)
+            .map(link => {
+                return {
+                    ...link,
+                    color: "#000000"
+                }
+            })
+
+        let filteredLink = newLinks.reduce((result, link) => {
+            if (!(result.find(rlink => rlink === link) || result.find(rlink => (rlink.source === link.target) && (rlink.target === link.source))))
+                return result.concat([link])
+            return result
+        }, [])
+
+        for (let i = 0; i < countCity; i++) {
+            const link = filteredLink[i]
+            link.color = "#ff0000"
+
+            const reLink = newLinks.find(rlink => (rlink.source === link.target) && (rlink.target === link.source))
+            reLink.color = "#ff0000"
+        }
+
+        console.log(newLinks)
+
         setGraph({
-            nodes: graph.nodes,
+            nodes: newNodes,
             links: newLinks
         })
     }
 
+    const updateBest = () => {
+        ants = ants.sort((a1, a2) => a2.pathLength - a1.pathLength)
+        const bestAnt = ants[0]
+        setBestPath(bestAnt.path)
+        setBestLenght(bestAnt.pathLength)
+    }
+
     const handleIteration = () => {
-        for (let i = 0; i < 10; i++) {
+        // for (let i = 0; i < 10; i++) {
             initAnts()
             while (simulateAnts()) {
             }
+            updateBest()
             updatePheromone()
-        }
-
-        console.log(ants)
-        console.log(graph)
+        // }
     }
 
     return (
@@ -247,6 +294,11 @@ export default function Map({settings, setSettigs}) {
                         style={{marginLeft: "5px", marginBottom: "20px"}}>
                     Старт Итерации
                 </Button>
+            </Grid>
+            <Grid item xs={12}>
+                {`[${bestPath.join('->')}]`}
+                <br/>
+                {`Path Lenght: ${bestLenght}`}
             </Grid>
         </Paper>
     )
