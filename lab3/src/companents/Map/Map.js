@@ -3,12 +3,19 @@ import {Button, Grid, Paper} from "@material-ui/core";
 import {Graph} from 'react-d3-graph'
 import {Check} from "@material-ui/icons";
 
+function sleep(ms) {
+    ms += new Date().getTime();
+    while (new Date() < ms){}
+}
 
 export default function Map({settings, setSettigs}) {
 
     const [graph, setGraph] = useState({})
     const [bestPath, setBestPath] = useState([])
-    const [bestLenght, setBestLenght] = useState(0)
+    const [bestLenght, setBestLenght] = useState([])
+
+    let bestPaths = []
+    let bestLenghts = []
 
     let ants = []
 
@@ -121,24 +128,29 @@ export default function Map({settings, setSettigs}) {
         }
 
 
-        do {
-            let p;
-            nextCity++;
-            if (nextCity >= countCity) {
-                nextCity = 0;
-            }
+        const nextCityes = []
+        for (nextCity = 0; nextCity < countCity; nextCity++) {
             if (!ant.path.includes(nextCity)) {
                 const link = links.find(link => (link.source === prevCity) && (link.target === nextCity))
-                p = Math.pow(link.pheromone, alfa) *
+                const p = Math.pow(link.pheromone, alfa) *
                     Math.pow((1.0 / getDistance(prevCity, nextCity)), betta) / denom;
 
-
-                const random = Math.random()
-                if (random < p) {
-                    break;
-                }
+                nextCityes.push({
+                    city: nextCity,
+                    p
+                })
             }
-        } while (true);
+        }
+
+        const random = Math.random()
+        let randomS = nextCityes[0].p
+        for (let i = 0; i < nextCityes.length; i++) {
+            if (random < randomS)
+                return nextCityes[i].city
+            else
+                randomS += nextCityes[i + 1].p
+        }
+
         return nextCity;
     }
 
@@ -253,8 +265,6 @@ export default function Map({settings, setSettigs}) {
             reLink.color = "#ff0000"
         }
 
-        console.log(newLinks)
-
         setGraph({
             nodes: newNodes,
             links: newLinks
@@ -264,18 +274,22 @@ export default function Map({settings, setSettigs}) {
     const updateBest = () => {
         ants = ants.sort((a1, a2) => a2.pathLength - a1.pathLength)
         const bestAnt = ants[0]
-        setBestPath(bestAnt.path)
-        setBestLenght(bestAnt.pathLength)
+        bestPaths.push(bestAnt.path)
+        bestLenghts.push(bestAnt.pathLength)
     }
 
     const handleIteration = () => {
-        // for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 50; i++) {
             initAnts()
             while (simulateAnts()) {
             }
+            sleep(10)
             updateBest()
             updatePheromone()
-        // }
+        }
+
+        setBestPath(bestPaths)
+        setBestLenght(bestLenghts)
     }
 
     return (
@@ -296,9 +310,17 @@ export default function Map({settings, setSettigs}) {
                 </Button>
             </Grid>
             <Grid item xs={12}>
-                {`[${bestPath.join('->')}]`}
-                <br/>
-                {`Path Lenght: ${bestLenght}`}
+                {bestPath.map((path, i) => {
+                    return (
+                        <>
+                            {`[${path.join('->')}]`}
+                            <br/>
+                            {`Path Lenght: ${bestLenght[i]}`}
+                            <br/>
+                        </>
+                    )
+                })}
+
             </Grid>
         </Paper>
     )
