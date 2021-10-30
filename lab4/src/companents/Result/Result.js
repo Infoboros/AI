@@ -10,11 +10,10 @@ export default function Result(props) {
     } = props
 
     const resultName = [
-        'Овощ1',
+        'Яблоко',
         'Овощ2',
         'Овощ3',
         'Овощ4',
-        'Овощ5',
     ]
 
     return (
@@ -27,7 +26,7 @@ export default function Result(props) {
                             <th
                                 className={"ResultCell"}
                             >
-                                {value}
+                                {value.toFixed(2)}
                             </th>
                         )
                     })}
@@ -35,7 +34,7 @@ export default function Result(props) {
                 </table>
             </Paper>
             {result.map((value, index) => {
-                if (!value)
+                if ((!value) || value < 0.90)
                     return null
 
                 return (

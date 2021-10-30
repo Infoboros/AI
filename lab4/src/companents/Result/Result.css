@@ -11,6 +11,7 @@
 
 .ResultCell {
     width: 100px;
+    padding-left: 25px;
 }
 
 .ResultName {

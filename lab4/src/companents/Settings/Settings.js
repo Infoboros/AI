@@ -5,25 +5,36 @@ import './Settings.css'
 import {useForm, Controller} from "react-hook-form";
 import {Button, Fade, FormLabel, Grid, TextField,} from "@material-ui/core";
 import {Check} from "@material-ui/icons";
+import learning from "../utils/learning";
 
-export default function Settings({isFormOpen, setIsFormOpen, setSettings}) {
+export default function Settings(props) {
+
+    const {
+        isFormOpen,
+        setIsFormOpen,
+
+        ihw, setIhw, how, setHow,
+
+        learnParams
+    } = props
 
     const onCloseClick = () => setIsFormOpen(false)
 
     const onSubmit = useCallback(async (data) => {
-        setSettings(data)
-    }, [setSettings]);
+
+        learning(ihw, setIhw, how, setHow, {
+            ...learnParams,
+            ...data
+        })
+
+    }, [ihw, how, setHow, setIhw]);
 
 
     const {handleSubmit, register, control} = useForm();
 
     const fields = [
-        // {label: "Количество городов", name: "countCity"},
-        // {label: "Количество муравьев на каждый город", name: "countAnts"},
-        // {label: "α (относительная значимость пути)", name: "alfa"},
-        // {label: "β (относительная значимость видимости)", name: "betta"},
-        // {label: "r (коэффициент количества фермента, оставляемого муравьем)", name: "r"},
-        // {label: "Q (количество фермента, оставляемого муравьем", name: "Q"},
+        {label: "Скорость обучени", name: "speedOfLearning"},
+        {label: "Количество эпох", name: "numberOfEpochs"},
     ]
 
     return (
