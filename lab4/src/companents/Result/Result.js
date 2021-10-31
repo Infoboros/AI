@@ -11,9 +11,9 @@ export default function Result(props) {
 
     const resultName = [
         'Яблоко',
-        'Овощ2',
-        'Овощ3',
-        'Овощ4',
+        'Ананас',
+        'Карамболы',
+        'Банан',
     ]
 
     return (
